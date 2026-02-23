@@ -1,0 +1,13 @@
+version: '3.8'
+services:
+  backend:
+    build: .
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./data:/data
+    environment:
+      - PORT=4000
+      - DATA_DIR=/data
+      - JWT_SECRET=dev_secret_change_me
+    restart: unless-stopped
