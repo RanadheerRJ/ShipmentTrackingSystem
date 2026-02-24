@@ -1,4 +1,4 @@
-const API_BASE = import.meta.env.VITE_API_BASE || '/api';
+const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:4000/api';
 
 let token: string | null = localStorage.getItem('uscis_token') || null;
 

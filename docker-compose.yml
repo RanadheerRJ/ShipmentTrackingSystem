@@ -1,0 +1,25 @@
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: shipment_frontend
+    ports:
+      - "3000:3000"
+    environment:
+    - VITE_API_URL=http://backend:4000/api
+    depends_on:
+    - backend
+
+  backend:
+    build: ./backend
+    container_name: shipment_backend
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./data:/data
+    environment:
+      - PORT=4000
+      - DATA_DIR=/data
+      - JWT_SECRET=dev_secret_change_me
+    restart: unless-stopped
