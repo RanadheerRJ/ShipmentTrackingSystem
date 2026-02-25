@@ -478,7 +478,7 @@ backfillMissingServiceTypeFromDefault();
 backfillTrackingGroupsFromShipmentData();
 
 // Create initial super admin if none exists
-const adminExists = db.prepare('SELECT COUNT(*) as c FROM users').get().c;
+const adminExists = (db.prepare<[], { c: number }>('SELECT COUNT(*) as c FROM users').get()?.c ?? 0);
 if (!adminExists) {
   const id = '00000000-0000-4000-8000-000000000001';
   const now = new Date().toISOString();

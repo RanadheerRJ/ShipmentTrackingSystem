@@ -194,7 +194,7 @@ router.get('/', (req: AuthedRequest, res) => {
   const fromSql = 'FROM shipments s LEFT JOIN tracking_groups tg ON s.tracking_group_id = tg.id';
 
   const totalStmt = db.prepare(`SELECT COUNT(*) as cnt ${fromSql} ${whereSql}`);
-  const total = totalStmt.get(...params).cnt;
+  const total = (totalStmt.get(...params) as { cnt: number } | undefined)?.cnt ?? 0;
 
   const stmt = db.prepare(`
     SELECT

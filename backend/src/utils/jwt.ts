@@ -1,16 +1,29 @@
-import jwt from 'jsonwebtoken';
-import { promisify } from 'util';
+import jwt, { JwtPayload, SignOptions } from 'jsonwebtoken';
 
-const SECRET = process.env.JWT_SECRET || 'replace_this_with_env_secret';
-const signAsync = promisify<string | Buffer | object, jwt.SignOptions, string>(jwt.sign as any);
+const SECRET: string =
+  process.env.JWT_SECRET ?? 'replace_this_with_env_secret';
 
-export function signToken(payload: object, expiresIn = '8h') {
-  return jwt.sign(payload, SECRET, { expiresIn });
+export interface TokenPayload extends JwtPayload {
+  id: string;
 }
 
-export function verifyToken(token: string) {
+export function signToken(
+  payload: object,
+  expiresIn: NonNullable<SignOptions['expiresIn']> = '8h'
+): string {
+  const options: SignOptions = { expiresIn };
+
+  return jwt.sign(payload, SECRET, options);
+}
+
+function isTokenPayload(payload: string | JwtPayload): payload is TokenPayload {
+  return typeof payload !== 'string' && typeof payload.id === 'string' && payload.id.length > 0;
+}
+
+export function verifyToken(token: string): TokenPayload | null {
   try {
-    return jwt.verify(token, SECRET) as any;
+    const payload = jwt.verify(token, SECRET);
+    return isTokenPayload(payload) ? payload : null;
   } catch {
     return null;
   }

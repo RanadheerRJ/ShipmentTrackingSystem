@@ -8,6 +8,21 @@ import { normalizeOptionalImageField } from '../utils/imageDataUrl';
 const router = Router();
 router.use(requireAuth);
 
+interface UserRow {
+  id: string;
+  email: string;
+  name: string;
+  password_hash: string;
+  role: string;
+  phone_number: string | null;
+  address: string | null;
+  profile_photo_data_url: string | null;
+  organization_id: string | null;
+  is_active: number;
+  created_at: string;
+  updated_at: string;
+}
+
 router.get('/', (req, res) => {
   const q = req.query as any;
   if ((req as any).user.role === 'SuperAdmin') {
@@ -172,7 +187,7 @@ router.post('/', async (req, res) => {
 router.put('/:id/role', (req, res) => {
   const { id } = req.params;
   const { role } = req.body;
-  const user = db.prepare('SELECT * FROM users WHERE id = ?').get(id);
+  const user = db.prepare<[string], UserRow>('SELECT * FROM users WHERE id = ?').get(id);
   if (!user) return res.status(404).json({ error: 'Not found' });
   const actor = (req as any).user;
   const isSuperAdmin = actor.role === 'SuperAdmin';
@@ -192,7 +207,7 @@ router.put('/:id/role', (req, res) => {
 router.put('/:id', (req, res) => {
   const { id } = req.params;
   const updates = req.body;
-  const user = db.prepare('SELECT * FROM users WHERE id = ?').get(id);
+  const user = db.prepare<[string], UserRow>('SELECT * FROM users WHERE id = ?').get(id);
   if (!user) return res.status(404).json({ error: 'Not found' });
   const actor = (req as any).user;
   // Only SuperAdmin or OrgAdmin of same org may update

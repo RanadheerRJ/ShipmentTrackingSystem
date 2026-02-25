@@ -10,6 +10,21 @@ const router = Router();
 
 router.use(requireAuth);
 
+interface CountRow {
+  c: number;
+}
+
+interface OrganizationRow {
+  id: string;
+  name: string;
+  phone_number: string | null;
+  location: string | null;
+  logo_data_url: string | null;
+  is_active: number;
+  created_at: string;
+  updated_at: string;
+}
+
 router.get('/', (req, res) => {
   const rows = db.prepare('SELECT * FROM organizations').all();
   res.json(rows);
@@ -57,7 +72,7 @@ router.get('/stats/global', (req, res) => {
     activeOrgs: orgs.filter((o: any) => o.is_active).length,
     totalShipments: shipments.length,
     totalUsers: users.length,
-    recentAuditCount: db.prepare('SELECT COUNT(*) as c FROM audit_logs').get().c,
+    recentAuditCount: db.prepare<[], CountRow>('SELECT COUNT(*) as c FROM audit_logs').get()?.c ?? 0,
   };
   res.json(stats);
 });
@@ -141,7 +156,7 @@ router.post('/', requireRole('SuperAdmin'), async (req, res) => {
 router.put('/:id', requireRole('SuperAdmin'), (req, res) => {
   const { id } = req.params;
   const updates = req.body;
-  const existing = db.prepare('SELECT * FROM organizations WHERE id = ?').get(id);
+  const existing = db.prepare<[string], OrganizationRow>('SELECT * FROM organizations WHERE id = ?').get(id);
   if (!existing) return res.status(404).json({ error: 'Not found' });
   const logoField = normalizeOptionalImageField(updates?.logo_data_url, 'Org logo');
   if (logoField.error) {
@@ -193,7 +208,7 @@ router.put('/:id', requireRole('SuperAdmin'), (req, res) => {
 
 router.delete('/:id', requireRole('SuperAdmin'), (req, res) => {
   const { id } = req.params;
-  const existing = db.prepare('SELECT * FROM organizations WHERE id = ?').get(id);
+  const existing = db.prepare<[string], OrganizationRow>('SELECT * FROM organizations WHERE id = ?').get(id);
   if (!existing) return res.status(404).json({ error: 'Not found' });
 
   const cleanupAndDelete = db.transaction((organizationId: string) => {

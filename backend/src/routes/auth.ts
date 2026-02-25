@@ -5,10 +5,25 @@ import { signToken, verifyToken } from '../utils/jwt';
 
 const router = Router();
 
+interface AuthUserRow {
+  id: string;
+  email: string;
+  name: string;
+  role: string;
+  password_hash: string;
+  phone_number: string | null;
+  address: string | null;
+  profile_photo_data_url: string | null;
+  organization_id: string | null;
+  is_active: number;
+}
+
+type PublicUserRow = Omit<AuthUserRow, 'password_hash'>;
+
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) return res.status(400).json({ error: 'Missing email or password' });
-  const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
+  const user = db.prepare<[string], AuthUserRow>('SELECT * FROM users WHERE email = ?').get(email);
   if (!user) return res.status(401).json({ error: 'Invalid credentials' });
   const ok = await verifyPassword(password, user.password_hash);
   if (!ok) return res.status(401).json({ error: 'Invalid credentials' });
@@ -32,12 +47,12 @@ router.get('/me', (req, res) => {
   const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
   if (!token) return res.status(200).json({ user: null });
   const payload = verifyToken(token);
-  if (!payload?.id) return res.status(200).json({ user: null });
-  const user = db.prepare(`
+  if (!payload) return res.status(200).json({ user: null });
+  const user = db.prepare<[string], PublicUserRow>(`
     SELECT id, email, name, role, phone_number, address, profile_photo_data_url, organization_id, is_active
     FROM users
     WHERE id = ?
-  `).get(payload.id) as any;
+  `).get(payload.id);
   if (!user || !user.is_active) return res.status(200).json({ user: null });
   return res.status(200).json({
     user: {

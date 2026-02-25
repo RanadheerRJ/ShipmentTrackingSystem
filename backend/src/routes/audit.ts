@@ -1,11 +1,11 @@
 import { Router } from 'express';
 import db from '../db';
-import { requireAuth } from '../middleware/auth';
+import { AuthedRequest, requireAuth } from '../middleware/auth';
 
 const router = Router();
 router.use(requireAuth);
 
-router.get('/', (req, res) => {
+router.get('/', (req: AuthedRequest, res) => {
   const orgId = req.query.organizationId || req.user.organization_id;
   let rows = db.prepare('SELECT * FROM audit_logs ORDER BY timestamp DESC').all();
   if (orgId) {
