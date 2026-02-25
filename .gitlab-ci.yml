@@ -1,0 +1,10 @@
+stages:
+  -build
+
+build_job:
+  stage:build
+  image: node:20
+  script:
+    - node -v 
+    - npm install
+    - npm run build
