@@ -3,6 +3,10 @@
 A full-stack Shipment Tracking application built with a modern React frontend and a TypeScript/Express backend, fully containerized using Docker Compose.
 
 ---
+# GitLab URL
+
+``` https://gitlab.com/rare-group1/tracking-system.git```
+---
 
 ## 📦 Tech Stack
 
